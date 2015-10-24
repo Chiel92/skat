@@ -1,0 +1,3 @@
+[submodule "graph-problems"]
+	path = graph-problems
+	url = https://github.com/Chiel92/graph-problems

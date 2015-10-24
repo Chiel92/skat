@@ -1,0 +1,26 @@
+#:kivy 1.0.9
+
+<ScreenCell>:
+    canvas:
+        Color:
+            rgb: self.color, self.color, self.color
+        Rectangle:
+            pos:self.pos
+            size:self.size
+
+<SkatGame>:
+    cell1: cell1_id
+    cell2: cell2_id
+
+    ScreenCell:
+        size: root.width/2, root.height
+        id: cell1_id
+        x: root.x
+        y: root.y
+
+    ScreenCell:
+        size: root.width/2, root.height
+        id: cell2_id
+        x: root.width-self.width
+        y: root.y
+
