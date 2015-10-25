@@ -1,26 +1,14 @@
 #:kivy 1.0.9
 
-<ScreenCell>:
+<Cell>:
+    width: self.skatgame.width / self.skatgame.cols
+    height: self.skatgame.height / self.skatgame.rows
+    x: self.col * self.width
+    y: self.row * self.height
     canvas:
         Color:
             rgb: self.color, self.color, self.color
         Rectangle:
             pos:self.pos
             size:self.size
-
-<SkatGame>:
-    cell1: cell1_id
-    cell2: cell2_id
-
-    ScreenCell:
-        size: root.width/2, root.height
-        id: cell1_id
-        x: root.x
-        y: root.y
-
-    ScreenCell:
-        size: root.width/2, root.height
-        id: cell2_id
-        x: root.width-self.width
-        y: root.y
 

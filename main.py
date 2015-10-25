@@ -16,10 +16,15 @@ from kivy.properties import NumericProperty, ObjectProperty
 from kivy.clock import Clock
 
 
-class ScreenCell(Widget):
+class Cell(Widget):
     color = NumericProperty(0.0)
     color_delta = 0
     speed = 1
+
+    row = NumericProperty(0)
+    col = NumericProperty(0)
+
+    skatgame = ObjectProperty(None)
 
     def toggle(self):
         if self.color == 0:
@@ -37,18 +42,26 @@ class ScreenCell(Widget):
 
 
 class SkatGame(Widget):
-    cell1 = ObjectProperty(None)
-    cell2 = ObjectProperty(None)
+    rows = 20
+    cols = 20
+
+    def __init__(self):
+        Widget.__init__(self)
+
+        for row in range(self.rows):
+            for col in range(self.cols):
+                cell = Cell(skatgame=self, row=row, col=col)
+                self.add_widget(cell)
+
 
     def update(self, dt):
-        self.cell1.update(dt)
-        self.cell2.update(dt)
+        for child in self.children:
+            child.update(dt)
 
     def on_touch_down(self, touch):
-        if self.cell1.collide_point(touch.x, touch.y):
-            self.cell1.toggle()
-        if self.cell2.collide_point(touch.x, touch.y):
-            self.cell2.toggle()
+        for child in self.children:
+            if child.collide_point(touch.x, touch.y):
+                child.toggle()
 
 
 class SkatApp(App):
