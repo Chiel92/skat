@@ -1,10 +1,10 @@
 __version__ = '1.0'
 
 # Enable importing modules from graph-problems folder
-import sys
-import os
-current_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, current_dir + '/graph-problems')
+# import sys
+# import os
+# current_dir = os.path.dirname(os.path.realpath(__file__))
+# sys.path.insert(0, current_dir + '/graph-problems')
 
 
 
@@ -18,11 +18,11 @@ from kivy.core.audio import SoundLoader
 
 class Cell(Widget):
     status = 0
-    nextstatus = 0
+    next_status = 0
 
     color = NumericProperty(0.0)
-    color_delta = 0
-    speed = 5
+    color_transition_speed = 4
+    _color_delta = 0
 
     row = NumericProperty(0)
     col = NumericProperty(0)
@@ -30,29 +30,31 @@ class Cell(Widget):
 
     skatgame = ObjectProperty(None)
 
-    def toggle(self):
-        self.status = 1 - self.status
-        self.refresh_colordelta()
+    def proceed(self):
+        self.set_status(self.next_status)
 
-    def refresh_colordelta(self):
+    def set_status(self, status):
+        self.status = status
+        self.refresh_color()
+
+    def refresh_color(self):
         if self.color != self.status:
             d = self.status - self.color
-            self.color_delta = d / abs(d) * self.speed
+            self._color_delta = d / abs(d) * self.color_transition_speed
 
-    def update(self, dt):
-        self.color += self.color_delta * dt
+    def update_color(self, dt):
+        self.color += self._color_delta * dt
         if not 0 < self.color < 1:
             self.color = round(self.color)
-            self.color_delta = 0
+            self._color_delta = 0
 
     def step(self):
         nr_neighbors = self.count_neighbors()
         if self.status == 1:
             if nr_neighbors not in [2, 3]:
-                self.status = 0
+                self.next_status = 0
         elif nr_neighbors == 3:
-            self.status = 1
-        self.refresh_colordelta()
+            self.next_status = 1
 
     def count_neighbors(self):
         count = 0
@@ -62,50 +64,59 @@ class Cell(Widget):
                     nrow = self.row + rowd
                     ncol = self.col + cold
                     if 0 <= nrow < self.skatgame.rows and 0 <= ncol < self.skatgame.cols:
-                        count += self.skatgame.grid[nrow][ncol].status
+                        count += self.skatgame.grid[(nrow, ncol)].status
         return count
 
 
 class SkatGame(Widget):
     cell_size = NumericProperty(0)
 
-    rows = 20
+    rows = 16
     cols = 20
 
-    sound_row = NumericProperty(0)
+    stepnumber = NumericProperty(0)
+    gameoflife_interval = 4
+
+    sound_col = NumericProperty(0)
 
     def __init__(self):
         Widget.__init__(self)
-        self.grid = [[None] * self.cols for _ in range(self.rows)]
+        self.grid = {}
 
         for row in range(self.rows):
             for col in range(self.cols):
                 cell = Cell(skatgame=self, row=row, col=col)
                 self.add_widget(cell)
-                self.grid[row][col] = cell
+                self.grid[(row, col)] = cell
 
+    def update_color(self, dt):
+        for cell in self.grid.values():
+            cell.update_color(dt)
 
-    def update(self, dt):
-        for child in self.children:
-            child.update(dt)
-
-    def gameoflife_step(self, dt):
-        for child in self.children:
-            child.step()
-        # for child in self.children:
-            # child.status = child.nextstatus
-            # child.refresh_colordelta()
+    def gameoflife_step(self):
+        for cell in self.grid.values():
+            cell.step()
+        for cell in self.grid.values():
+            cell.proceed()
 
     def sound_step(self, dt):
-        for cell in self.grid[self.sound_row]:
+        print('Start step')
+        for row in range(self.rows):
+            cell = self.grid[(row, self.sound_col)]
             if cell.status == 1:
                 self.sounds[cell.col].play()
-        self.sound_row = (self.sound_row + 1) % self.rows
+                print('Playing {},{}'.format(cell.row, cell.col))
+        self.sound_col = (self.sound_col + 1) % self.rows
+        self.stepnumber += 1
+
+        if self.gameoflife_interval == self.stepnumber:
+            self.gameoflife_step()
+            self.stepnumber = 0
 
     def on_touch_move(self, touch):
         for child in self.children:
             if child.collide_point(touch.x, touch.y):
-                child.toggle()
+                child.set_status(1)
 
 
 class SkatApp(App):
@@ -134,10 +145,8 @@ class SkatApp(App):
             18 : SoundLoader.load('sound/g7.wav'),
             19 : SoundLoader.load('sound/a7.wav'),
         }
-        Clock.schedule_interval(game.update, 1.0 / 60.0)
-        dt = .25
-        Clock.schedule_interval(game.sound_step, dt)
-        Clock.schedule_interval(game.gameoflife_step, dt)
+        Clock.schedule_interval(game.update_color, 1.0 / 60.0)
+        Clock.schedule_interval(game.sound_step, .5)
         return game
 
 

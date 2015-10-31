@@ -8,7 +8,7 @@
 
     canvas:
         Color:
-            rgb: self.row == self.skatgame.sound_row, self.color, self.color
+            rgb: self.col == self.skatgame.sound_col, self.color, self.color
         Rectangle:
             pos: (self.x + self.margin, self.y + self.margin)
             size: (self.width - 2 * self.margin, self.height - 2 *  self.margin)
@@ -19,7 +19,7 @@
     grid_height: self.rows * self.cell_size
     grid_width: self.cols * self.cell_size
     grid_origin_x: (self.width - self.grid_width) / 2
-    grid_origin_y: (self.height - self.grid_width) / 2
+    grid_origin_y: (self.height - self.grid_height) / 2
 
     canvas:
         Color:
@@ -27,3 +27,4 @@
         Rectangle:
             pos:self.pos
             size:self.size
+
