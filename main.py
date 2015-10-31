@@ -104,9 +104,9 @@ class SkatGame(Widget):
         for row in range(self.rows):
             cell = self.grid[(row, self.currently_playing_col)]
             if cell.status == 1:
-                self.sounds[cell.row].play()
+                self.colsounds[cell.col][cell.row].play()
                 print('Playing {},{}'.format(cell.row, cell.col))
-        self.currently_playing_col = (self.currently_playing_col + 1) % self.rows
+        self.currently_playing_col = (self.currently_playing_col + 1) % self.cols
         self.stepnumber += 1
 
         if self.gameoflife_interval == self.stepnumber:
@@ -123,28 +123,30 @@ class SkatApp(App):
 
     def build(self):
         game = SkatGame()
-        game.sounds = {
-            0 : SoundLoader.load('sound/c4.wav'),
-            1 : SoundLoader.load('sound/d4.wav'),
-            2 : SoundLoader.load('sound/e4.wav'),
-            3 : SoundLoader.load('sound/g4.wav'),
-            4 : SoundLoader.load('sound/a4.wav'),
-            5 : SoundLoader.load('sound/c5.wav'),
-            6 : SoundLoader.load('sound/d5.wav'),
-            7 : SoundLoader.load('sound/e5.wav'),
-            8 : SoundLoader.load('sound/g5.wav'),
-            9 : SoundLoader.load('sound/a5.wav'),
-            10 : SoundLoader.load('sound/c6.wav'),
-            11 : SoundLoader.load('sound/d6.wav'),
-            12 : SoundLoader.load('sound/e6.wav'),
-            13 : SoundLoader.load('sound/g6.wav'),
-            14 : SoundLoader.load('sound/a6.wav'),
-            15 : SoundLoader.load('sound/c7.wav'),
-            16 : SoundLoader.load('sound/d7.wav'),
-            17 : SoundLoader.load('sound/e7.wav'),
-            18 : SoundLoader.load('sound/g7.wav'),
-            19 : SoundLoader.load('sound/a7.wav'),
-        }
+        game.colsounds = {}
+        for col in range(game.cols):
+            game.colsounds[col] = {
+                0 : SoundLoader.load('sound/c4.wav'),
+                1 : SoundLoader.load('sound/d4.wav'),
+                2 : SoundLoader.load('sound/e4.wav'),
+                3 : SoundLoader.load('sound/g4.wav'),
+                4 : SoundLoader.load('sound/a4.wav'),
+                5 : SoundLoader.load('sound/c5.wav'),
+                6 : SoundLoader.load('sound/d5.wav'),
+                7 : SoundLoader.load('sound/e5.wav'),
+                8 : SoundLoader.load('sound/g5.wav'),
+                9 : SoundLoader.load('sound/a5.wav'),
+                10 : SoundLoader.load('sound/c6.wav'),
+                11 : SoundLoader.load('sound/d6.wav'),
+                12 : SoundLoader.load('sound/e6.wav'),
+                13 : SoundLoader.load('sound/g6.wav'),
+                14 : SoundLoader.load('sound/a6.wav'),
+                15 : SoundLoader.load('sound/c7.wav'),
+                16 : SoundLoader.load('sound/d7.wav'),
+                17 : SoundLoader.load('sound/e7.wav'),
+                18 : SoundLoader.load('sound/g7.wav'),
+                19 : SoundLoader.load('sound/a7.wav'),
+            }
         Clock.schedule_interval(game.update_color, 1.0 / 60.0)
         Clock.schedule_interval(game.sound_step, .25)
         return game
