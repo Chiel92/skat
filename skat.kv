@@ -8,7 +8,7 @@
 
     canvas:
         Color:
-            rgb: self.col == self.skatgame.sound_col, self.color, self.color
+            rgb: self.col == self.skatgame.currently_playing_col, self.color, self.color
         Rectangle:
             pos: (self.x + self.margin, self.y + self.margin)
             size: (self.width - 2 * self.margin, self.height - 2 *  self.margin)

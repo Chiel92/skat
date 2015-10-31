@@ -75,9 +75,9 @@ class SkatGame(Widget):
     cols = 20
 
     stepnumber = NumericProperty(0)
-    gameoflife_interval = 4
+    gameoflife_interval = 4 # Number of steps between each game of life update
 
-    sound_col = NumericProperty(0)
+    currently_playing_col = NumericProperty(0)
 
     def __init__(self):
         Widget.__init__(self)
@@ -102,11 +102,11 @@ class SkatGame(Widget):
     def sound_step(self, dt):
         print('Start step')
         for row in range(self.rows):
-            cell = self.grid[(row, self.sound_col)]
+            cell = self.grid[(row, self.currently_playing_col)]
             if cell.status == 1:
-                self.sounds[cell.col].play()
+                self.sounds[cell.row].play()
                 print('Playing {},{}'.format(cell.row, cell.col))
-        self.sound_col = (self.sound_col + 1) % self.rows
+        self.currently_playing_col = (self.currently_playing_col + 1) % self.rows
         self.stepnumber += 1
 
         if self.gameoflife_interval == self.stepnumber:
@@ -114,9 +114,9 @@ class SkatGame(Widget):
             self.stepnumber = 0
 
     def on_touch_move(self, touch):
-        for child in self.children:
-            if child.collide_point(touch.x, touch.y):
-                child.set_status(1)
+        for cell in self.grid.values():
+            if cell.collide_point(touch.x, touch.y):
+                cell.set_status(1)
 
 
 class SkatApp(App):
@@ -146,7 +146,7 @@ class SkatApp(App):
             19 : SoundLoader.load('sound/a7.wav'),
         }
         Clock.schedule_interval(game.update_color, 1.0 / 60.0)
-        Clock.schedule_interval(game.sound_step, .5)
+        Clock.schedule_interval(game.sound_step, .25)
         return game
 
 
