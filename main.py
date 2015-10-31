@@ -61,10 +61,9 @@ class Cell(Widget):
         for rowd in [-1, 0, 1]:
             for cold in [-1, 0, 1]:
                 if not (cold == 0 and rowd == 0):
-                    nrow = self.row + rowd
-                    ncol = self.col + cold
-                    if 0 <= nrow < self.skatgame.rows and 0 <= ncol < self.skatgame.cols:
-                        count += self.skatgame.grid[(nrow, ncol)].status
+                    nrow = (self.row + rowd) % self.skatgame.rows
+                    ncol = (self.col + cold) % self.skatgame.cols
+                    count += self.skatgame.grid[(nrow, ncol)].status
         return count
 
 
