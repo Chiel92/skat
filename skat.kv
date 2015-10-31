@@ -1,14 +1,29 @@
 #:kivy 1.0.9
 
 <Cell>:
-    width: self.skatgame.width / self.skatgame.cols
-    height: self.skatgame.height / self.skatgame.rows
-    x: self.col * self.width
-    y: self.row * self.height
+    size: [self.skatgame.cell_size] * 2
+    margin: self.skatgame.cell_size / 10
+    x: self.skatgame.grid_origin_x + self.col * self.width
+    y: self.skatgame.grid_origin_y + self.row * self.height
+
     canvas:
         Color:
-            rgb: self.color, self.color, self.color
+            rgb: self.row == self.skatgame.sound_row, self.color, self.color
+        Rectangle:
+            pos: (self.x + self.margin, self.y + self.margin)
+            size: (self.width - 2 * self.margin, self.height - 2 *  self.margin)
+
+<SkatGame>:
+    cell_size: min(self.width / self.cols, self.height / self.rows)
+
+    grid_height: self.rows * self.cell_size
+    grid_width: self.cols * self.cell_size
+    grid_origin_x: (self.width - self.grid_width) / 2
+    grid_origin_y: (self.height - self.grid_width) / 2
+
+    canvas:
+        Color:
+            rgb: .1, .1, .1
         Rectangle:
             pos:self.pos
             size:self.size
-
