@@ -49,16 +49,21 @@ class Cell(Widget):
     def step(self):
         nr_neighbors = self.count_neighbors()
         if self.state == 1:
-            if nr_neighbors not in [2, 3]:
+            if nr_neighbors in [2, 3]:
+                self.next_state = 1
+            else:
                 self.next_state = 0
-        elif nr_neighbors == 3:
-            self.next_state = 1
+        else:
+            if nr_neighbors == 3:
+                self.next_state = 1
+            else:
+                self.next_state = 0
 
     def count_neighbors(self):
         count = 0
         for rowd in [-1, 0, 1]:
-            for cold in [-3, 0, 2]:
-                if not (cold == 0 and rowd == 0):
+            for cold in [-1, 0, 1]:
+                if not (cold == rowd == 0):
                     nrow = (self.row + rowd) % self.skatgame.rows
                     ncol = (self.col + cold) % self.skatgame.cols
                     count += self.skatgame.grid[(nrow, ncol)].state
@@ -90,7 +95,7 @@ class SkatGame(Widget):
 
         self.soundboards = []
         soundboard1 = {}
-        for col in range(4):
+        for col in range(8):
             soundboard1[col] = {
                 0: SoundLoader.load('sound/samples/C3.wav'),
                 1: SoundLoader.load('sound/samples/D3.wav'),
@@ -107,7 +112,7 @@ class SkatGame(Widget):
             }
 
         soundboard2 = {}
-        for col in range(4):
+        for col in range(8):
             soundboard2[col] = {
                 0: SoundLoader.load('sound/samples/D3.wav'),
                 1: SoundLoader.load('sound/samples/G3.wav'),
@@ -124,7 +129,7 @@ class SkatGame(Widget):
             }
 
         soundboard3 = {}
-        for col in range(4):
+        for col in range(8):
             soundboard3[col] = {
                 0: SoundLoader.load('sound/samples/C3.wav'),
                 1: SoundLoader.load('sound/samples/E3.wav'),
@@ -141,7 +146,7 @@ class SkatGame(Widget):
             }
 
         soundboard4 = {}
-        for col in range(4):
+        for col in range(8):
             soundboard4[col] = {
                 0: SoundLoader.load('sound/samples/C3.wav'),
                 1: SoundLoader.load('sound/samples/F3.wav'),
@@ -158,12 +163,12 @@ class SkatGame(Widget):
             }
 
         self.soundboards.append(soundboard1)
-        self.soundboards.append(soundboard1)
-        self.soundboards.append(soundboard1)
-        self.soundboards.append(soundboard1)
-        # self.soundboards.append(soundboard2)
-        # self.soundboards.append(soundboard3)
-        # self.soundboards.append(soundboard4)
+        # self.soundboards.append(soundboard1)
+        # self.soundboards.append(soundboard1)
+        # self.soundboards.append(soundboard1)
+        self.soundboards.append(soundboard2)
+        self.soundboards.append(soundboard3)
+        self.soundboards.append(soundboard4)
 
     def update_color(self, dt):
         for cell in self.grid.values():
@@ -185,10 +190,11 @@ class SkatGame(Widget):
         soundboard = self.soundboards[self.current_soundboard_index]
         current_col_cells = [self.grid[(row, self.currently_playing_col)] for row in
                              range(self.rows)]
-        to_play = [soundboard[cell.col % 4][cell.row] for cell in current_col_cells if cell.state]
+        to_play = [soundboard[cell.col % 8][cell.row] for cell in current_col_cells if cell.state]
 
         # Seperate loop for playing, to minimize latency between tones
-        for s in to_play:
+        # Max two tones at once, to reduce crackling
+        for s in to_play[:2]:
             s.play()
 
         self.currently_playing_col = (self.currently_playing_col + 1) % self.cols
