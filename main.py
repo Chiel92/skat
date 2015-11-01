@@ -57,7 +57,7 @@ class Cell(Widget):
     def count_neighbors(self):
         count = 0
         for rowd in [-1, 0, 1]:
-            for cold in [-2, 0, 2]:
+            for cold in [-3, 0, 2]:
                 if not (cold == 0 and rowd == 0):
                     nrow = (self.row + rowd) % self.skatgame.rows
                     ncol = (self.col + cold) % self.skatgame.cols
@@ -68,19 +68,20 @@ class Cell(Widget):
 class SkatGame(Widget):
     cell_size = NumericProperty(0)
 
-    rows = 20
+    rows = 12
     cols = 16
 
     stepnumber = NumericProperty(0)
     gameoflife_interval = 16  # Number of steps between each game of life update
 
     currently_playing_col = NumericProperty(0)
-    current_soundboard_index = 0
+    current_soundboard_index = NumericProperty(0)
 
     def __init__(self):
+        self.colors = [(.6, .4, .4), (.4, .6, .4), (.4, .4, .6), (.6, .6, .4)]
         Widget.__init__(self)
-        self.grid = {}
 
+        self.grid = {}
         for row in range(self.rows):
             for col in range(self.cols):
                 cell = Cell(skatgame=self, row=row, col=col)
@@ -88,31 +89,81 @@ class SkatGame(Widget):
                 self.grid[(row, col)] = cell
 
         self.soundboards = []
-        soundboard = {}
-        for col in range(self.cols):
-            soundboard[col] = {
-                0: SoundLoader.load('sound/c4.wav'),
-                1: SoundLoader.load('sound/d4.wav'),
-                2: SoundLoader.load('sound/e4.wav'),
-                3: SoundLoader.load('sound/g4.wav'),
-                4: SoundLoader.load('sound/a4.wav'),
-                5: SoundLoader.load('sound/c5.wav'),
-                6: SoundLoader.load('sound/d5.wav'),
-                7: SoundLoader.load('sound/e5.wav'),
-                8: SoundLoader.load('sound/g5.wav'),
-                9: SoundLoader.load('sound/a5.wav'),
-                10: SoundLoader.load('sound/c6.wav'),
-                11: SoundLoader.load('sound/d6.wav'),
-                12: SoundLoader.load('sound/e6.wav'),
-                13: SoundLoader.load('sound/g6.wav'),
-                14: SoundLoader.load('sound/a6.wav'),
-                15: SoundLoader.load('sound/c7.wav'),
-                16: SoundLoader.load('sound/d7.wav'),
-                17: SoundLoader.load('sound/e7.wav'),
-                18: SoundLoader.load('sound/g7.wav'),
-                19: SoundLoader.load('sound/a7.wav'),
+        soundboard1 = {}
+        for col in range(4):
+            soundboard1[col] = {
+                0: SoundLoader.load('sound/samples/C3.wav'),
+                1: SoundLoader.load('sound/samples/D3.wav'),
+                2: SoundLoader.load('sound/samples/E3.wav'),
+                3: SoundLoader.load('sound/samples/G3.wav'),
+                4: SoundLoader.load('sound/samples/C4.wav'),
+                5: SoundLoader.load('sound/samples/D4.wav'),
+                6: SoundLoader.load('sound/samples/E4.wav'),
+                7: SoundLoader.load('sound/samples/G4.wav'),
+                8: SoundLoader.load('sound/samples/C5.wav'),
+                9: SoundLoader.load('sound/samples/D5.wav'),
+                10: SoundLoader.load('sound/samples/E5.wav'),
+                11: SoundLoader.load('sound/samples/G5.wav'),
             }
-        self.soundboards.append(soundboard)
+
+        soundboard2 = {}
+        for col in range(4):
+            soundboard2[col] = {
+                0: SoundLoader.load('sound/samples/D3.wav'),
+                1: SoundLoader.load('sound/samples/G3.wav'),
+                2: SoundLoader.load('sound/samples/A3.wav'),
+                3: SoundLoader.load('sound/samples/B3.wav'),
+                4: SoundLoader.load('sound/samples/D4.wav'),
+                5: SoundLoader.load('sound/samples/G4.wav'),
+                6: SoundLoader.load('sound/samples/A4.wav'),
+                7: SoundLoader.load('sound/samples/B4.wav'),
+                8: SoundLoader.load('sound/samples/D5.wav'),
+                9: SoundLoader.load('sound/samples/G5.wav'),
+                10: SoundLoader.load('sound/samples/A5.wav'),
+                11: SoundLoader.load('sound/samples/B5.wav'),
+            }
+
+        soundboard3 = {}
+        for col in range(4):
+            soundboard3[col] = {
+                0: SoundLoader.load('sound/samples/C3.wav'),
+                1: SoundLoader.load('sound/samples/E3.wav'),
+                2: SoundLoader.load('sound/samples/G3.wav'),
+                3: SoundLoader.load('sound/samples/A3.wav'),
+                4: SoundLoader.load('sound/samples/C4.wav'),
+                5: SoundLoader.load('sound/samples/E4.wav'),
+                6: SoundLoader.load('sound/samples/G4.wav'),
+                7: SoundLoader.load('sound/samples/A4.wav'),
+                8: SoundLoader.load('sound/samples/C5.wav'),
+                9: SoundLoader.load('sound/samples/E5.wav'),
+                10: SoundLoader.load('sound/samples/G5.wav'),
+                11: SoundLoader.load('sound/samples/A5.wav'),
+            }
+
+        soundboard4 = {}
+        for col in range(4):
+            soundboard4[col] = {
+                0: SoundLoader.load('sound/samples/C3.wav'),
+                1: SoundLoader.load('sound/samples/F3.wav'),
+                2: SoundLoader.load('sound/samples/G3.wav'),
+                3: SoundLoader.load('sound/samples/A3.wav'),
+                4: SoundLoader.load('sound/samples/C4.wav'),
+                5: SoundLoader.load('sound/samples/F4.wav'),
+                6: SoundLoader.load('sound/samples/G4.wav'),
+                7: SoundLoader.load('sound/samples/A4.wav'),
+                8: SoundLoader.load('sound/samples/C5.wav'),
+                9: SoundLoader.load('sound/samples/F5.wav'),
+                10: SoundLoader.load('sound/samples/G5.wav'),
+                11: SoundLoader.load('sound/samples/A5.wav'),
+            }
+
+        self.soundboards.append(soundboard1)
+        self.soundboards.append(soundboard1)
+        self.soundboards.append(soundboard1)
+        self.soundboards.append(soundboard1)
+        # self.soundboards.append(soundboard2)
+        # self.soundboards.append(soundboard3)
+        # self.soundboards.append(soundboard4)
 
     def update_color(self, dt):
         for cell in self.grid.values():
@@ -134,7 +185,7 @@ class SkatGame(Widget):
         soundboard = self.soundboards[self.current_soundboard_index]
         current_col_cells = [self.grid[(row, self.currently_playing_col)] for row in
                              range(self.rows)]
-        to_play = [soundboard[cell.col][cell.row] for cell in current_col_cells if cell.state]
+        to_play = [soundboard[cell.col % 4][cell.row] for cell in current_col_cells if cell.state]
 
         # Seperate loop for playing, to minimize latency between tones
         for s in to_play:
