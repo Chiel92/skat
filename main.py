@@ -194,7 +194,8 @@ class SkatGame(Widget):
 
         # Seperate loop for playing, to minimize latency between tones
         # Max two tones at once, to reduce crackling
-        for s in to_play[:2]:
+        # This very readable expression picks the first and last element in to_play
+        for s in to_play[::max(1, len(to_play) - 1)]:
             s.play()
 
         self.currently_playing_col = (self.currently_playing_col + 1) % self.cols
