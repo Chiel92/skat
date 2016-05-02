@@ -6,12 +6,16 @@ __version__ = '1.0'
 # current_dir = os.path.dirname(os.path.realpath(__file__))
 # sys.path.insert(0, current_dir + '/graph-problems')
 
+from time import time
 
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import NumericProperty, ObjectProperty
 from kivy.clock import Clock
-from kivy.core.audio import SoundLoader
+
+from pythonosc import osc_message_builder
+from pythonosc import udp_client
+osc_client = udp_client.UDPClient('localhost', 5005)
 
 
 class Cell(Widget):
@@ -80,7 +84,6 @@ class SkatGame(Widget):
     gameoflife_interval = 16  # Number of steps between each game of life update
 
     currently_playing_col = NumericProperty(0)
-    current_soundboard_index = NumericProperty(0)
 
     def __init__(self):
         self.colors = [(.6, .4, .4), (.4, .6, .4), (.4, .4, .6), (.6, .6, .4)]
@@ -92,83 +95,6 @@ class SkatGame(Widget):
                 cell = Cell(skatgame=self, row=row, col=col)
                 self.add_widget(cell)
                 self.grid[(row, col)] = cell
-
-        self.soundboards = []
-        soundboard1 = {}
-        for col in range(8):
-            soundboard1[col] = {
-                0: SoundLoader.load('sound/samples/C3.wav'),
-                1: SoundLoader.load('sound/samples/D3.wav'),
-                2: SoundLoader.load('sound/samples/E3.wav'),
-                3: SoundLoader.load('sound/samples/G3.wav'),
-                4: SoundLoader.load('sound/samples/C4.wav'),
-                5: SoundLoader.load('sound/samples/D4.wav'),
-                6: SoundLoader.load('sound/samples/E4.wav'),
-                7: SoundLoader.load('sound/samples/G4.wav'),
-                8: SoundLoader.load('sound/samples/C5.wav'),
-                9: SoundLoader.load('sound/samples/D5.wav'),
-                10: SoundLoader.load('sound/samples/E5.wav'),
-                11: SoundLoader.load('sound/samples/G5.wav'),
-            }
-
-        soundboard2 = {}
-        for col in range(8):
-            soundboard2[col] = {
-                0: SoundLoader.load('sound/samples/D3.wav'),
-                1: SoundLoader.load('sound/samples/G3.wav'),
-                2: SoundLoader.load('sound/samples/A3.wav'),
-                3: SoundLoader.load('sound/samples/B3.wav'),
-                4: SoundLoader.load('sound/samples/D4.wav'),
-                5: SoundLoader.load('sound/samples/G4.wav'),
-                6: SoundLoader.load('sound/samples/A4.wav'),
-                7: SoundLoader.load('sound/samples/B4.wav'),
-                8: SoundLoader.load('sound/samples/D5.wav'),
-                9: SoundLoader.load('sound/samples/G5.wav'),
-                10: SoundLoader.load('sound/samples/A5.wav'),
-                11: SoundLoader.load('sound/samples/B5.wav'),
-            }
-
-        soundboard3 = {}
-        for col in range(8):
-            soundboard3[col] = {
-                0: SoundLoader.load('sound/samples/C3.wav'),
-                1: SoundLoader.load('sound/samples/E3.wav'),
-                2: SoundLoader.load('sound/samples/G3.wav'),
-                3: SoundLoader.load('sound/samples/A3.wav'),
-                4: SoundLoader.load('sound/samples/C4.wav'),
-                5: SoundLoader.load('sound/samples/E4.wav'),
-                6: SoundLoader.load('sound/samples/G4.wav'),
-                7: SoundLoader.load('sound/samples/A4.wav'),
-                8: SoundLoader.load('sound/samples/C5.wav'),
-                9: SoundLoader.load('sound/samples/E5.wav'),
-                10: SoundLoader.load('sound/samples/G5.wav'),
-                11: SoundLoader.load('sound/samples/A5.wav'),
-            }
-
-        soundboard4 = {}
-        for col in range(8):
-            soundboard4[col] = {
-                0: SoundLoader.load('sound/samples/C3.wav'),
-                1: SoundLoader.load('sound/samples/F3.wav'),
-                2: SoundLoader.load('sound/samples/G3.wav'),
-                3: SoundLoader.load('sound/samples/A3.wav'),
-                4: SoundLoader.load('sound/samples/C4.wav'),
-                5: SoundLoader.load('sound/samples/F4.wav'),
-                6: SoundLoader.load('sound/samples/G4.wav'),
-                7: SoundLoader.load('sound/samples/A4.wav'),
-                8: SoundLoader.load('sound/samples/C5.wav'),
-                9: SoundLoader.load('sound/samples/F5.wav'),
-                10: SoundLoader.load('sound/samples/G5.wav'),
-                11: SoundLoader.load('sound/samples/A5.wav'),
-            }
-
-        self.soundboards.append(soundboard1)
-        # self.soundboards.append(soundboard1)
-        # self.soundboards.append(soundboard1)
-        # self.soundboards.append(soundboard1)
-        self.soundboards.append(soundboard2)
-        self.soundboards.append(soundboard3)
-        self.soundboards.append(soundboard4)
 
     def update_color(self, dt):
         for cell in self.grid.values():
@@ -182,21 +108,35 @@ class SkatGame(Widget):
         for cell in self.grid.values():
             cell.proceed()
 
-        # Load next soundboard
-        self.current_soundboard_index = ((self.current_soundboard_index + 1) %
-                                         len(self.soundboards))
-
     def sound_step(self, dt):
-        soundboard = self.soundboards[self.current_soundboard_index]
         current_col_cells = [self.grid[(row, self.currently_playing_col)] for row in
                              range(self.rows)]
-        to_play = [soundboard[cell.col % 8][cell.row] for cell in current_col_cells if cell.state]
 
-        # Seperate loop for playing, to minimize latency between tones
-        # Max two tones at once, to reduce crackling
-        # This very readable expression picks the first and last element in to_play
-        for s in to_play[::max(1, len(to_play) - 1)]:
-            s.play()
+        # Send messages to chuck
+        rows_on = [cell.row for cell in current_col_cells if cell.state]
+        if rows_on:
+            row_to_play = max(rows_on)
+            freq_map = {
+                    0 : 100.0,
+                    1 : 200.0,
+                    2 : 300.0,
+                    3 : 400.0,
+                    4 : 500.0,
+                    5 : 600.0,
+                    6 : 700.0,
+                    7 : 800.0,
+                    8 : 900.0,
+                    9 : 1000.0,
+                    10 : 1100.0,
+                    11 : 1200.0,
+                }
+            osc_client.send(osc_message_builder.OscMessageBuilder(address="/debug").build())
+            msg = osc_message_builder.OscMessageBuilder(address="/frequency")
+            msg.add_arg(freq_map[row_to_play])
+            msg = msg.build()
+            print(msg.dgram)
+            print('Sending at', time())
+            osc_client.send(msg)
 
         self.currently_playing_col = (self.currently_playing_col + 1) % self.cols
         self.stepnumber += 1
