@@ -6,7 +6,7 @@ __version__ = '1.0'
 # current_dir = os.path.dirname(os.path.realpath(__file__))
 # sys.path.insert(0, current_dir + '/graph-problems')
 
-from time import time
+from datetime import datetime
 
 from kivy.app import App
 from kivy.uix.widget import Widget
@@ -116,6 +116,8 @@ class SkatGame(Widget):
         rows_on = [cell.row for cell in current_col_cells if cell.state]
         if rows_on:
             row_to_play = max(rows_on)
+            row_to_play2 = min(rows_on)
+            row_to_play3 = rows_on[1] if len(rows_on) > 1 else rows_on[0]
             freq_map = {
                     0 : 100.0,
                     1 : 200.0,
@@ -123,19 +125,20 @@ class SkatGame(Widget):
                     3 : 400.0,
                     4 : 500.0,
                     5 : 600.0,
-                    6 : 700.0,
-                    7 : 800.0,
-                    8 : 900.0,
-                    9 : 1000.0,
-                    10 : 1100.0,
-                    11 : 1200.0,
+                    6 : 800.0,
+                    7 : 900.0,
+                    8 : 1000.0,
+                    9 : 1200.0,
+                    10 : 1500.0,
+                    11 : 1600.0,
                 }
-            osc_client.send(osc_message_builder.OscMessageBuilder(address="/debug").build())
+            # osc_client.send(osc_message_builder.OscMessageBuilder(address="/debug").build())
             msg = osc_message_builder.OscMessageBuilder(address="/frequency")
             msg.add_arg(freq_map[row_to_play])
+            msg.add_arg(freq_map[row_to_play2])
             msg = msg.build()
             print(msg.dgram)
-            print('Sending at', time())
+            print('Sending at', datetime.now())
             osc_client.send(msg)
 
         self.currently_playing_col = (self.currently_playing_col + 1) % self.cols
